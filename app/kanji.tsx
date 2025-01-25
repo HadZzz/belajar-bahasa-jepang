@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Dimensions, ImageBackground, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { loadKanjiData, KanjiItem } from '../utils/kanjiLoader';
 import { SearchBar } from '../components/SearchBar';
 
@@ -20,20 +21,20 @@ export default function KanjiScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    loadKanjiDataForLevel();
-  }, [selectedLevel]);
+    const fetchKanji = async () => {
+      try {
+        setLoading(true);
+        const data = await loadKanjiData(selectedLevel);
+        setKanjiList(data);
+      } catch (error) {
+        console.error('Error loading kanji data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadKanjiDataForLevel = async () => {
-    try {
-      setLoading(true);
-      const data = await loadKanjiData(selectedLevel);
-      setKanjiList(data);
-    } catch (error) {
-      console.error('Error loading kanji data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchKanji();
+  }, [selectedLevel]);
 
   const filteredKanji = useMemo(() => {
     if (!searchQuery) return kanjiList;
@@ -53,12 +54,19 @@ export default function KanjiScreen() {
 
   const renderKanjiItem = ({ item }: { item: KanjiItem }) => (
     <TouchableOpacity 
-      style={styles.kanjiItem}
       onPress={() => handleKanjiPress(item)}
+      style={styles.kanjiItem}
     >
-      <Text style={styles.kanjiText}>{item.kanji}</Text>
-      <Text style={styles.readingText}>{item.reading}</Text>
-      <Text style={styles.meaningText} numberOfLines={2}>{item.meaning}</Text>
+      <LinearGradient
+        colors={['#fff', '#f8f8f8']}
+        style={styles.kanjiGradient}
+      >
+        <Text style={styles.kanjiChar}>{item.kanji}</Text>
+        <View style={styles.kanjiDetails}>
+          <Text style={styles.reading}>{item.reading}</Text>
+          <Text style={styles.meaning} numberOfLines={1}>{item.meaning}</Text>
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
@@ -70,7 +78,11 @@ export default function KanjiScreen() {
       onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <ImageBackground 
+          source={require('../assets/images/japanese-paper.png')}
+          style={styles.modalContent}
+          imageStyle={styles.modalBackground}
+        >
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Detail Kanji</Text>
             <TouchableOpacity 
@@ -84,7 +96,9 @@ export default function KanjiScreen() {
           <ScrollView showsVerticalScrollIndicator={false}>
             {selectedKanji && (
               <View style={styles.modalKanjiContent}>
-                <Text style={styles.modalKanjiChar}>{selectedKanji.kanji}</Text>
+                <View style={styles.kanjiCircle}>
+                  <Text style={styles.modalKanjiChar}>{selectedKanji.kanji}</Text>
+                </View>
                 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>
@@ -112,13 +126,17 @@ export default function KanjiScreen() {
               </View>
             )}
           </ScrollView>
-        </View>
+        </ImageBackground>
       </View>
     </Modal>
   );
 
   return (
-    <View style={styles.container}>
+    <ImageBackground 
+      source={require('../assets/images/japanese-pattern.png')}
+      style={styles.container}
+      imageStyle={styles.backgroundPattern}
+    >
       <Stack.Screen 
         options={{ 
           title: 'Belajar Kanji',
@@ -127,28 +145,29 @@ export default function KanjiScreen() {
       />
       
       <View style={styles.levelContainer}>
-        <FlatList
-          data={JLPT_LEVELS}
-          horizontal
+        <ScrollView 
+          horizontal 
           showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
+          contentContainerStyle={styles.levelScroll}
+        >
+          {JLPT_LEVELS.map((level) => (
             <TouchableOpacity
+              key={level}
               style={[
                 styles.levelButton,
-                selectedLevel === item && styles.selectedLevel
+                selectedLevel === level && styles.selectedLevel
               ]}
-              onPress={() => setSelectedLevel(item)}
+              onPress={() => setSelectedLevel(level)}
             >
               <Text style={[
                 styles.levelText,
-                selectedLevel === item && styles.selectedLevelText
+                selectedLevel === level && styles.selectedLevelText
               ]}>
-                {item}
+                {level}
               </Text>
             </TouchableOpacity>
-          )}
-          keyExtractor={item => item}
-        />
+          ))}
+        </ScrollView>
       </View>
 
       <SearchBar
@@ -159,12 +178,15 @@ export default function KanjiScreen() {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#FF4B4B" />
+          <Text style={styles.loaderText}>Memuat Kanji...</Text>
+        </View>
       ) : (
         <FlashList
           data={filteredKanji}
           renderItem={renderKanjiItem}
-          estimatedItemSize={120}
+          estimatedItemSize={100}
           numColumns={2}
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={
@@ -177,7 +199,7 @@ export default function KanjiScreen() {
       )}
 
       {renderKanjiModal()}
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -186,13 +208,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  backgroundPattern: {
+    opacity: 0.05,
+  },
   levelContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingVertical: 12,
-    backgroundColor: '#f4f4f4',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  levelScroll: {
+    paddingHorizontal: 12,
   },
   levelButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
     marginHorizontal: 6,
     borderRadius: 20,
     backgroundColor: '#fff',
@@ -203,7 +236,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   selectedLevel: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF4B4B',
   },
   levelText: {
     fontSize: 16,
@@ -217,38 +250,41 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   kanjiItem: {
-    backgroundColor: '#fff',
-    padding: 16,
+    flex: 1,
     margin: 6,
-    borderRadius: 12,
-    elevation: 3,
+    aspectRatio: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    alignItems: 'center',
-    flex: 1,
   },
-  kanjiText: {
-    fontSize: 32,
+  kanjiGradient: {
+    flex: 1,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kanjiChar: {
+    fontSize: 40,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
-  readingText: {
-    fontSize: 16,
+  kanjiDetails: {
+    alignItems: 'center',
+  },
+  reading: {
+    fontSize: 14,
     color: '#666',
     marginBottom: 4,
-    textAlign: 'center',
   },
-  meaningText: {
-    fontSize: 14,
-    color: '#333',
+  meaning: {
+    fontSize: 12,
+    color: '#999',
     textAlign: 'center',
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -258,10 +294,13 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 24,
     width: width * 0.85,
     maxHeight: '80%',
     overflow: 'hidden',
+  },
+  modalBackground: {
+    opacity: 0.1,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -270,9 +309,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -280,19 +320,38 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalKanjiContent: {
+    padding: 24,
+  },
+  kanjiCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#fff',
     alignItems: 'center',
-    padding: 20,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 24,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   modalKanjiChar: {
-    fontSize: 72,
-    marginBottom: 24,
+    fontSize: 60,
+    fontWeight: 'bold',
+    color: '#333',
   },
   modalSection: {
-    width: '100%',
     marginBottom: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   modalSectionTitle: {
     fontSize: 16,
@@ -309,6 +368,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#333',
     lineHeight: 24,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loaderText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
   },
   emptyContainer: {
     flex: 1,
