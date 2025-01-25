@@ -1,0 +1,29 @@
+{
+  "radicals": [
+    {
+      "radical": "一",
+      "meaning": "satu",
+      "strokeCount": 1
+    },
+    {
+      "radical": "丨",
+      "meaning": "garis tegak",
+      "strokeCount": 1
+    },
+    {
+      "radical": "亅",
+      "meaning": "kait",
+      "strokeCount": 1
+    },
+    {
+      "radical": "二",
+      "meaning": "dua",
+      "strokeCount": 2
+    },
+    {
+      "radical": "亠",
+      "meaning": "tutup",
+      "strokeCount": 2
+    }
+  ]
+}

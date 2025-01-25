@@ -1,0 +1,29 @@
+{
+  "vocabulary": [
+    {
+      "word": "私",
+      "reading": "わたし",
+      "meaning": "saya"
+    },
+    {
+      "word": "今日",
+      "reading": "きょう",
+      "meaning": "hari ini"
+    },
+    {
+      "word": "学校",
+      "reading": "がっこう",
+      "meaning": "sekolah"
+    },
+    {
+      "word": "先生",
+      "reading": "せんせい",
+      "meaning": "guru"
+    },
+    {
+      "word": "友達",
+      "reading": "ともだち",
+      "meaning": "teman"
+    }
+  ]
+}

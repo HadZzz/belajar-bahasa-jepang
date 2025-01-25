@@ -1,0 +1,29 @@
+{
+  "kanji": [
+    {
+      "character": "日",
+      "reading": "ニチ、ジツ、ひ",
+      "meaning": "hari, matahari"
+    },
+    {
+      "character": "本",
+      "reading": "ホン、もと",
+      "meaning": "buku, asal"
+    },
+    {
+      "character": "人",
+      "reading": "ジン、ニン、ひと",
+      "meaning": "orang"
+    },
+    {
+      "character": "大",
+      "reading": "ダイ、タイ、おお-きい",
+      "meaning": "besar"
+    },
+    {
+      "character": "小",
+      "reading": "ショウ、ちい-さい",
+      "meaning": "kecil"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "kana": [
+    { "character": "ア", "romaji": "a" },
+    { "character": "イ", "romaji": "i" },
+    { "character": "ウ", "romaji": "u" },
+    { "character": "エ", "romaji": "e" },
+    { "character": "オ", "romaji": "o" },
+    { "character": "カ", "romaji": "ka" },
+    { "character": "キ", "romaji": "ki" },
+    { "character": "ク", "romaji": "ku" },
+    { "character": "ケ", "romaji": "ke" },
+    { "character": "コ", "romaji": "ko" }
+  ]
+}
